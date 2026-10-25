@@ -1,6 +1,6 @@
 # Windows installation and distribution
 
-Target: Windows 10/11 x64. Native CI uses the actual `windows-latest` runner;
+Target: Windows 11+ x64 (or Windows Server 2019+), following the current [Playwright system requirements](https://playwright.dev/python/docs/intro#system-requirements). Windows 10 is not an upstream-supported target for this browser build. Native CI uses the actual `windows-latest` runner;
 it does not certify every Windows version, GPU, DPI setting or antivirus product.
 
 ## Portable application

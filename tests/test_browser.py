@@ -146,27 +146,18 @@ def test_preexisting_output_is_never_overwritten(game, tmp_path):
 
 
 @pytest.mark.gui
-def test_gui_runs_browser_worker(game, tmp_path):
+def test_gui_runs_browser_worker(game, tmp_path, tk_root):
     import time
-    import tkinter as tk
     from gametest_ai.gui import TestApp
-
-    try:
-        root = tk.Tk()
-    except tk.TclError:
-        pytest.skip("No graphical display available")
-    try:
-        app = TestApp(root)
-        app.target.set(str(game))
-        app.output.set(str(tmp_path / "gui report"))
-        app.set_plan(fuzz_plan(42, 5))
-        app.run()
-        deadline = time.monotonic() + 20
-        while app.busy and time.monotonic() < deadline:
-            root.update()
-            time.sleep(0.02)
-        assert not app.busy
-        assert app.report_path and Path(app.report_path).exists()
-        assert "0 failed" in app.status.get()
-    finally:
-        root.destroy()
+    app = TestApp(tk_root)
+    app.target.set(str(game))
+    app.output.set(str(tmp_path / "gui report"))
+    app.set_plan(fuzz_plan(42, 5))
+    app.run()
+    deadline = time.monotonic() + 20
+    while app.busy and time.monotonic() < deadline:
+        tk_root.update()
+        time.sleep(0.02)
+    assert not app.busy
+    assert app.report_path and Path(app.report_path).exists()
+    assert "0 failed" in app.status.get()

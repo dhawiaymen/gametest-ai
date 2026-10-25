@@ -67,20 +67,18 @@ def test_websocket_is_blocked_by_default(tmp_path):
 
 
 @pytest.mark.gui
-def test_bundled_demo_can_be_loaded():
+def test_bundled_demo_can_be_loaded(tk_root):
     import tkinter as tk
+    import weakref
     from pathlib import Path
     from gametest_ai.gui import TestApp
-    try:
-        root = tk.Tk()
-    except tk.TclError:
-        pytest.skip("No display")
-    try:
-        app = TestApp(root)
-        app.load_demo()
-        assert Path(app.target.get()).exists()
-        assert app.get_plan()["scenarios"]
-        temporary = Path(app.demo_directory.name)
-    finally:
-        root.destroy()
+    app = TestApp(tk_root)
+    app.load_demo()
+    assert Path(app.target.get()).exists()
+    assert app.get_plan()["scenarios"]
+    temporary = Path(app.demo_directory.name)
+    variables = [weakref.ref(value) for value in vars(app).values() if isinstance(value, tk.Variable)]
+    assert variables
+    app.destroy()
     assert not temporary.exists()
+    assert all(reference() is None for reference in variables)

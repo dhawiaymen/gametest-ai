@@ -9,6 +9,8 @@ early tool release, with no production certification or community adoption claim
 
 ### Stabilization before release
 
+- Release owned Tk variables on the UI thread and make GUI display availability mandatory in CI.
+
 - Reject malformed step types and oversized assertion data; make equality and inequality type-consistent.
 - Bound browser diagnostics, sanitize XML control characters, check snapshot invariants and report asynchronous adapter timeouts.
 - Intercept WebSocket upstream connections by default, detect HTTP failures, and provide a bundled demo.
