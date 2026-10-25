@@ -20,6 +20,8 @@ visual understanding or guaranteed bug detection.
 
 ## Portable Windows download
 
+Use Windows 11+ x64 or Windows Server 2019+. Current Playwright does not list Windows 10 as a supported target; see [Windows requirements](docs/WINDOWS.md).
+
 Open [Releases](https://github.com/dhawiaymen/gametest-ai/releases) and download the
 `gametest-ai-0.1.0-windows-x64.zip` asset when the verified release is available.
 Extract **the whole archive**, then launch `GameTestAI/GameTestAI.exe`. Do not run it inside

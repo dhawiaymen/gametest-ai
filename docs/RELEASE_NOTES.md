@@ -26,7 +26,7 @@ separate path with spaces, and its executable opens Tk and performs a real opera
 See the attached verification record and the Actions run for the tagged commit.
 
 Executables are unsigned. Native hosted-runner testing is not manual certification
-of all Windows 10/11 desktops, display scaling, GPU drivers or antivirus configurations.
+of all Windows 11+ desktops, display scaling, GPU drivers or antivirus configurations.
 Read the README limitations and troubleshooting guide before reporting a problem.
 
 Development used AI assistance. No user, download or adoption figures are claimed.
