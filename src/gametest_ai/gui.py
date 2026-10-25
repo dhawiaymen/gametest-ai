@@ -1,4 +1,6 @@
 import json
+from importlib.resources import files
+import tempfile
 from pathlib import Path
 import queue
 import threading
@@ -19,6 +21,7 @@ class TestApp(ttk.Frame):
         self.cancel = threading.Event()
         self.busy = False
         self.report_path = None
+        self.demo_directory = None
         ttk.Label(self, text="GameTest AI", font=("Segoe UI", 24, "bold")).pack(anchor="w")
         ttk.Label(
             self, text="Replay scenarios, find browser errors, and explore games with seeded input."
@@ -41,6 +44,7 @@ class TestApp(ttk.Frame):
         toolbar = ttk.Frame(self)
         toolbar.pack(fill="x", pady=12)
         for label, fn in [
+            ("Load demo", self.load_demo),
             ("Open plan", self.open_plan),
             ("Save plan", self.save_plan),
             ("Seeded plan", self.seeded),
@@ -55,6 +59,9 @@ class TestApp(ttk.Frame):
         tabs.add(plan_tab, text="Scenario JSON")
         self.editor = tk.Text(plan_tab, wrap="none", font=("Consolas", 10))
         self.editor.pack(fill="both", expand=True)
+        scrollbar = ttk.Scrollbar(plan_tab, command=self.editor.yview)
+        scrollbar.pack(side="right", fill="y")
+        self.editor.configure(yscrollcommand=scrollbar.set)
         self.editor.insert("1.0", json.dumps(fuzz_plan(42, 100), indent=2))
         ai = ttk.Frame(tabs, padding=12)
         tabs.add(ai, text="Local AI planner (optional)")
@@ -93,7 +100,22 @@ class TestApp(ttk.Frame):
 
     def destroy(self):
         self.after_cancel(self._poll_id)
+        if self.demo_directory:
+            self.demo_directory.cleanup()
         super().destroy()
+
+    def load_demo(self):
+        if self.busy:
+            return
+        if self.demo_directory is None:
+            self.demo_directory = tempfile.TemporaryDirectory(prefix="gametest-demo-")
+        directory = Path(self.demo_directory.name)
+        resource = files("gametest_ai").joinpath("templates")
+        for name in ("index.html", "game.js", "project.json", "LICENSE"):
+            (directory / name).write_bytes(resource.joinpath(name).read_bytes())
+        self.target.set(str(directory / "index.html"))
+        self.set_plan(json.loads(resource.joinpath("tap-win.json").read_text(encoding="utf-8")))
+        self.status.set("Demo loaded. Choose a new report folder, then Run tests.")
 
     def choose_target(self):
         p = filedialog.askopenfilename(filetypes=[("HTML games", "*.html *.htm")])

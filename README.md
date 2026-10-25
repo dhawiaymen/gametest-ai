@@ -1,5 +1,10 @@
 # GameTest AI
 
+[![Tests and Windows build](https://github.com/dhawiaymen/gametest-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/dhawiaymen/gametest-ai/actions/workflows/ci.yml)
+
+![GameTest AI application screenshot](docs/demo/application.png)
+
+
 **Reproducible browser-game testing, with an optional local AI scenario planner.**
 
 GameTest AI is a Windows-oriented test workbench for HTML mini-games. It runs
@@ -8,10 +13,23 @@ and writes JSON, HTML, JUnit XML, and screenshots. A seeded input explorer tests
 Canvas games through a small adapter. Optional Ollama integration generates
 draft scenarios from a game description.
 
-Version **0.1.0**, initial release candidate. MIT licensed. No paid API is
+Version **0.1.0**, initial public version. MIT licensed. No paid API is
 required. The deterministic runner and fuzz explorer are **not machine learning**;
 the AI feature is the optional model-based planner, not a claim of autonomous
 visual understanding or guaranteed bug detection.
+
+## Portable Windows download
+
+Open [Releases](https://github.com/dhawiaymen/gametest-ai/releases) and download the
+`gametest-ai-0.1.0-windows-x64.zip` asset when the verified release is available.
+Extract **the whole archive**, then launch `GameTestAI/GameTestAI.exe`. Do not run it inside
+the ZIP or move only the EXE. The application is unsigned. No administrator
+rights or paid account is needed. Keep the bundled `licenses/` folder.
+
+The portable build includes its matching Chromium browser; Python and a separate browser download are not required. Ollama and model weights remain optional and are not bundled.
+
+See [Windows help](docs/WINDOWS.md), [troubleshooting](docs/TROUBLESHOOTING.md),
+[real demonstrations](docs/DEMO.md), and the [public roadmap](ROADMAP.md).
 
 ## Windows installation
 
@@ -45,9 +63,11 @@ Reports also include the exact plan for replay. Each run requires a new output
 folder. Exit codes: **0** all passed, **1** one or more failed, **2** setup or
 input error. Failed assertions intentionally appear as failures, not successes.
 
+Use **Load demo** for a bundled playable game and a passing plan.
+
 In the GUI, choose an HTML file (or enter a URL), choose a new report folder,
 load a JSON plan, and click **Run tests**. The log stays responsive. **Cancel**
-takes effect between steps; the current browser call is bounded by its timeout.
+takes effect between steps; locator operations and asynchronous adapter promises use the configured timeout. A synchronous infinite JavaScript loop can still hang Chromium; only test trusted games.
 
 ## What can be tested?
 
@@ -111,13 +131,12 @@ powershell -ExecutionPolicy Bypass -File scripts/build_windows.ps1
 The full suite includes actual browser pass/fail scenarios, input handling,
 runtime-error detection, server path isolation, reporting, and AI response
 validation. GUI tests require a display. CI targets Windows/Ubuntu and Python
-3.11–3.13. The supplied validation record distinguishes executed tests from
-configured future CI. See [`docs/WINDOWS.md`](docs/WINDOWS.md) for distribution.
+3.11–3.13. See [executed validation](docs/VALIDATION.md) and [Windows distribution](docs/WINDOWS.md). See [`docs/WINDOWS.md`](docs/WINDOWS.md) for distribution.
 
 ## Limits, network, and privacy
 
 Only games you are authorized to test should be run. No existing browser profile
-or login session is used. External HTTP origins are blocked by default; use
+or login session is used. External HTTP origins and upstream WebSocket connections are blocked by default; use
 `run --allow-external` for authorized CDN-dependent games. This is not a hostile
 content sandbox: Chromium is the isolation boundary, and games can still make
 same-origin requests. Local games are served temporarily on loopback only;
@@ -129,10 +148,17 @@ adaptive reinforcement learning, and coverage measurement are not implemented.
 Fuzzing is reproducible random input, not exhaustive exploration. Screenshots
 and reports can contain game content and local paths; review them before sharing.
 No reports are uploaded automatically. Scenarios are bounded to 120 seconds
-between steps, with an individual call timeout of 5 seconds by default.
+between steps, with a default 5-second timeout for navigation, locators and asynchronous adapter promises. This is not a hard process deadline for synchronous JavaScript.
 
 ## Contributing / license
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and
 [LICENSE](LICENSE). Maintainer: [dhawiaymen](https://github.com/dhawiaymen).
 This implementation was AI-assisted; no adoption or external usage is claimed.
+
+## Community
+
+Report reproducible bugs through [Issues](https://github.com/dhawiaymen/gametest-ai/issues),
+read the [contribution guide](CONTRIBUTING.md), and discuss proposals in
+[Discussions](https://github.com/dhawiaymen/gametest-ai/discussions) when enabled.
+Please follow our [Code of Conduct](CODE_OF_CONDUCT.md).

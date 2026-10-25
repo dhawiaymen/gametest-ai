@@ -1,0 +1,14 @@
+{
+  "workload": "1000 seeded adapter steps plus reset in real Chromium",
+  "elapsed_seconds": 2.8692,
+  "peak_process_tree_rss_bytes": 29425664,
+  "python": "3.12.14",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "dependencies": {
+    "Pillow": "12.3.0",
+    "playwright": "1.51.0",
+    "psutil": "7.2.2"
+  },
+  "browser_override": "/root/.cache/ms-playwright/chromium_headless_shell-1161/chrome-linux/headless_shell",
+  "measurement": "Linux getrusage peak RSS of Python process only; excludes browser subprocesses; includes fixture creation; synthetic local workload, not a Windows benchmark"
+}

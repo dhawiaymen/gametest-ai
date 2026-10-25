@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security reporting
+    url: https://github.com/dhawiaymen/gametest-ai/blob/main/SECURITY.md
+    about: Do not post private vulnerability details in public issues.

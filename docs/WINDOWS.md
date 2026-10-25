@@ -1,38 +1,40 @@
-# Windows support and distribution
+# Windows installation and distribution
 
-Target: Windows 10/11 x64, Python 3.11 or newer with Tcl/Tk. The recommended
-first-run path is Setup.cmd + Start.cmd. Each repository has its own .venv.
-Use a writable folder, not Program Files. Paths containing spaces are supported.
+Target: Windows 10/11 x64. Native CI uses the actual `windows-latest` runner;
+it does not certify every Windows version, GPU, DPI setting or antivirus product.
 
-The source implementation uses pathlib, Tkinter, and platform-independent
-libraries. Development validation in the supplied record was performed on
-Linux. Native Windows behavior is pending until the included CI runs on GitHub
-or a maintainer performs a local Windows test. Do not advertise it as certified.
+## Portable application
 
-## Build a portable folder
+Download the ZIP from the repository's Releases page, extract everything into a
+writable directory (for example `D:\DevTools\GameTestAI`), and launch `GameTestAI.exe` in
+the extracted application folder. Python is not required for the portable build.
+Chromium is bundled with GameTest AI; no browser cache from a development machine is required. Local Ollama/model installation is optional.
 
-Run `scripts/build_windows.ps1` on Windows from an environment with Python and
-project dependencies. It runs the tests, then PyInstaller. The result is
-`dist/GameTestAI/`. Distribute the **entire folder**, not just its .exe. Keep the
-license and third-party notices with the binary. Builds are unsigned; no code
-signing certificate or installer is included. PyInstaller is a build dependency,
-not application code under this project's MIT license.
+The executable is unsigned. Verify its SHA-256 against the release's `SHA256SUMS.txt`:
 
-GameTest AI still requires a Playwright-managed Chromium installation for the
-same Playwright version used in the build. The Windows build includes an
-`Install-Browser.cmd` and a pinned browser-install requirement. Run that helper
-on the destination machine before launching the executable. This requires
-Python and network access once. A fully self-contained browser bundle is not
-provided in 0.1.0; distribute from source for the simplest support path.
+```powershell
+Get-FileHash .\downloaded-file.zip -Algorithm SHA256
+```
 
-## Manual release validation
+Do not disable antivirus or run as administrator to work around a failed launch.
+Keep the entire `_internal` and `licenses` directories with the EXE.
 
-1. Run Setup.cmd from a fresh extraction with a path containing spaces.
-2. Launch Start.cmd; open examples and complete the README workflow.
-3. Confirm invalid input produces an understandable error and preserves inputs.
-4. Run CLI --help and the automated tests; inspect artifacts.
-5. Build the portable folder and repeat on a clean Windows user account.
-6. Record OS, Python, dependency versions, commit, and actual results.
+## Run from source
 
-If `python -m tkinter` fails, repair Python and enable Tcl/Tk. If setup fails,
-read the pip error instead of rerunning with administrator privileges blindly.
+Install Python 3.11–3.13 including Tcl/Tk and the Python launcher, then run `Setup.cmd`
+and `Start.cmd`. Setup uses the network once for dependencies. Source development is
+also supported on Linux. See the README for the CLI and application-specific requirements.
+
+## Build and release gate
+
+`scripts/build_windows.ps1` installs constrained dependencies, executes the tests,
+builds with PyInstaller, collects dependency notices, creates a ZIP, extracts it into
+a different path containing spaces, then launches the extracted EXE's smoke check.
+The check opens Tk and runs a real core operation. Any failure stops publication.
+`release-assets/windows-verification.json` records the checks and archive digest.
+The release workflow additionally requires all six OS/Python test jobs and rechecks
+SHA-256 before creating the tag and release. Existing releases are never replaced.
+
+A hosted runner is not a clean consumer Windows desktop. Manual checks still needed:
+high DPI (125–200%), low-resolution laptops, accessibility/screen readers, a standard
+fresh user account, antivirus behavior, and older supported Windows installations.

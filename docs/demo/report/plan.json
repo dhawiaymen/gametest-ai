@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "scenarios": [
+    {
+      "name": "Win with five taps",
+      "steps": [
+        {
+          "type": "reset",
+          "seed": 42
+        },
+        {
+          "type": "game",
+          "action": {
+            "tap": true
+          },
+          "dt": 0.1
+        },
+        {
+          "type": "game",
+          "action": {
+            "tap": true
+          },
+          "dt": 0.1
+        },
+        {
+          "type": "game",
+          "action": {
+            "tap": true
+          },
+          "dt": 0.1
+        },
+        {
+          "type": "game",
+          "action": {
+            "tap": true
+          },
+          "dt": 0.1
+        },
+        {
+          "type": "game",
+          "action": {
+            "tap": true
+          },
+          "dt": 0.1
+        },
+        {
+          "type": "assert",
+          "source": "snapshot",
+          "path": "score",
+          "op": "eq",
+          "value": 5
+        },
+        {
+          "type": "assert",
+          "source": "snapshot",
+          "path": "status",
+          "op": "eq",
+          "value": "won"
+        }
+      ]
+    }
+  ]
+}

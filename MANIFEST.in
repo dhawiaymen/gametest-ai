@@ -5,3 +5,7 @@ recursive-include scripts *.ps1 *.cmd *.py
 recursive-include tests *.py
 recursive-include src *.py *.js *.html *.txt
 global-exclude *.py[cod]
+include CODE_OF_CONDUCT.md ROADMAP.md constraints-release.txt
+recursive-include docs *.png *.json *.html
+recursive-include src *.json LICENSE
+recursive-include docs *
