@@ -1,0 +1,1 @@
+Five Tap Challenge is a tap game with GameTest adapter v1. Initial score 0, time 30, lives 3. Every tap adds one score. Five taps win. No tap loses when time reaches zero. Reset sets all initial state. The #restart button resets. Canvas is clickable and Space is handled when the canvas has focus.
