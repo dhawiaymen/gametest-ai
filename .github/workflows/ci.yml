@@ -32,7 +32,7 @@ jobs:
         if: runner.os == 'Linux'
         run: xvfb-run -a python -m pytest --junitxml=test-results.xml
       - run: python -m build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: tests-${{ matrix.os }}-${{ matrix.python }}
@@ -50,7 +50,7 @@ jobs:
           node-version: "22"
       - run: ./scripts/build_windows.ps1
         shell: pwsh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: verified-windows-distribution
           path: release-assets/*
