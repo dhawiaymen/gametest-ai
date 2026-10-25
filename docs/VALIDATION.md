@@ -32,3 +32,5 @@ success until its run completes. Manual consumer-desktop/DPI/accessibility testi
 remains outstanding.
 
 [Authentic demo](DEMO.md) · [Reproducible benchmark](demo/benchmark.json)
+
+A Windows/Python 3.11 run skipped the bundled-demo GUI test after Tk initialization failed. That release run was cancelled. GUI tests now use a main-thread interpreter cleanup fixture and fail in CI if a display cannot be constructed. Workbench destruction also releases owned Tk variables immediately; demo cleanup is verified.

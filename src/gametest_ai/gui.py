@@ -102,6 +102,10 @@ class TestApp(ttk.Frame):
         self.after_cancel(self._poll_id)
         if self.demo_directory:
             self.demo_directory.cleanup()
+        for name, value in list(vars(self).items()):
+            if isinstance(value, tk.Variable):
+                setattr(self, name, None)
+        del value
         super().destroy()
 
     def load_demo(self):

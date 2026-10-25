@@ -140,20 +140,11 @@ def test_ai_rejects_nonlocal_endpoints(url):
 
 
 @pytest.mark.gui
-def test_gui_constructs():
-    import tkinter as tk
+def test_gui_constructs(tk_root):
     from gametest_ai.gui import TestApp
-
-    try:
-        root = tk.Tk()
-    except tk.TclError:
-        pytest.skip("No graphical display available")
-    try:
-        app = TestApp(root)
-        root.update()
-        assert app.get_plan()["version"] == 1
-    finally:
-        root.destroy()
+    app = TestApp(tk_root)
+    tk_root.update()
+    assert app.get_plan()["version"] == 1
 
 
 def test_server_blocks_symlink_index(tmp_path):
