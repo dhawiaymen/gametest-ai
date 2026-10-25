@@ -5,12 +5,39 @@ import html
 import json
 import math
 import os
+import re
 from pathlib import Path
 import time
 from urllib.parse import urlparse
 import xml.etree.ElementTree as ET
 from .schema import validate_plan, lookup, compare
 from .server import game_url
+
+
+class DiagnosticLog(list):
+    """Bound noisy games without hiding the fact that diagnostics occurred."""
+    def append(self, message):
+        if len(self) < 200:
+            super().append(str(message)[:2000])
+        elif len(self) == 200:
+            super().append("Further diagnostics omitted (200-message limit).")
+
+
+def adapter_call(page, method, argument, timeout):
+    return page.evaluate("""async ({method, argument, timeout}) => {
+      const adapter = window.gameTest;
+      if (!adapter || adapter.version !== 1 || typeof adapter[method] !== 'function')
+        throw Error('GameTest adapter v1 missing or method unavailable: ' + method);
+      let timer;
+      try {
+        return await Promise.race([
+          Promise.resolve().then(() => method === 'step' ?
+            adapter.step(argument.action, argument.dt) :
+            method === 'reset' ? adapter.reset(argument) : adapter.snapshot()),
+          new Promise((_, reject) => {timer = setTimeout(() => reject(Error('Adapter timed out')), timeout);})
+        ]);
+      } finally {clearTimeout(timer);}
+    }""", {"method": method, "argument": argument, "timeout": timeout})
 
 
 def invariants(snapshot):
@@ -39,21 +66,18 @@ def execute_step(page, step, timeout):
     elif kind == "wait":
         page.wait_for_timeout(step["ms"])
     elif kind in ("reset", "game"):
-        exists = page.evaluate("() => !!window.gameTest && window.gameTest.version === 1")
-        if not exists:
-            raise AssertionError(
-                "GameTest adapter v1 missing. DOM steps work without it; game/reset steps require it."
-            )
         if kind == "reset":
-            snapshot = page.evaluate("(seed) => window.gameTest.reset(seed)", step["seed"])
+            snapshot = adapter_call(page, "reset", step["seed"], timeout)
         else:
-            snapshot = page.evaluate("(s) => window.gameTest.step(s.action,s.dt)", step)
+            snapshot = adapter_call(page, "step", step, timeout)
         invariants(snapshot)
     elif kind == "assert":
         if step["source"] == "text":
             actual = page.locator(step["path"]).inner_text(timeout=timeout)
         else:
-            actual = lookup(page.evaluate("() => window.gameTest.snapshot()"), step["path"])
+            snapshot = adapter_call(page, "snapshot", None, timeout)
+            invariants(snapshot)
+            actual = lookup(snapshot, step["path"])
         compare(actual, step["op"], step["value"])
 
 
@@ -69,11 +93,13 @@ def write_reports(report, folder):
     )
     rows = []
     for result in report["scenarios"]:
-        case = ET.SubElement(
-            suite, "testcase", name=result["name"], time=str(result["duration_seconds"])
-        )
+        def xml_text(value):
+            return re.sub(r"[^\x09\x0a\x0d\x20-\ud7ff\ue000-\ufffd\U00010000-\U0010ffff]", "\ufffd", value)
+
+        case = ET.SubElement(suite, "testcase", name=xml_text(result["name"]), time=str(result["duration_seconds"]))
         if result["status"] == "failed":
-            ET.SubElement(case, "failure", message=result["error"]).text = result["error"]
+            error = xml_text(result["error"])
+            ET.SubElement(case, "failure", message=error).text = error
         shot = result.get("screenshot")
         link = f'<a href="{html.escape(shot, quote=True)}">Screenshot</a>' if shot else ""
         rows.append(
@@ -129,7 +155,7 @@ def run_plan(
         try:
             for i, scenario in enumerate(plan["scenarios"]):
                 begin = time.monotonic()
-                logs = []
+                logs = DiagnosticLog()
                 result = {
                     "name": scenario["name"],
                     "status": "passed",
@@ -154,6 +180,11 @@ def run_plan(
                             route.abort()
 
                     context.route("**/*", route_request)
+                    def block_socket(socket):
+                        logs.append("WebSocket blocked: " + socket.url)
+                        # An intercepted socket has no upstream connection unless
+                        # connect_to_server() is called. Keep it inert until context cleanup.
+                    context.route_web_socket("**/*", block_socket)
                 page = context.new_page()
                 page.set_default_timeout(timeout)
                 page.on("pageerror", lambda e: logs.append("JavaScript: " + str(e)))
@@ -164,6 +195,7 @@ def run_plan(
                     ),
                 )
                 page.on("requestfailed", lambda req: logs.append("Request failed: " + req.url))
+                page.on("response", lambda res: logs.append(f"HTTP {res.status}: {res.url}") if res.status >= 400 else None)
                 try:
                     if cancel and cancel.is_set():
                         raise RuntimeError("Cancelled")

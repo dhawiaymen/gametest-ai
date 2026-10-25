@@ -9,3 +9,5 @@ dist/
 *.spec
 reports/
 .env
+release-assets/
+build-tests.xml

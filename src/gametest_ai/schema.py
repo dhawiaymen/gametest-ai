@@ -13,8 +13,8 @@ def finite(value, lo, hi, label, integer=False):
     if (
         isinstance(value, bool)
         or not isinstance(value, (int, float))
-        or not math.isfinite(value)
         or not lo <= value <= hi
+        or not math.isfinite(value)
         or (integer and int(value) != value)
     ):
         raise ValueError(
@@ -51,6 +51,8 @@ def validate_plan(plan):
             if not isinstance(step, dict):
                 raise ValueError("Each step must be an object")
             kind = step.get("type")
+            if not isinstance(kind, str):
+                raise ValueError("Step type must be a string")
             fields = {
                 "click": {"type", "selector"},
                 "press": {"type", "key"},
@@ -88,8 +90,12 @@ def validate_plan(plan):
                     raise ValueError("Snapshot path must be dotted identifiers")
                 if step["op"] not in OPS:
                     raise ValueError("Unknown assertion operator")
-                if isinstance(step["value"], (list, dict)) or step["value"] is None:
+                if type(step["value"]) not in (str, int, float, bool):
                     raise ValueError("Assertion value must be a string, number, or boolean")
+                if isinstance(step["value"], str) and len(step["value"]) > 10000:
+                    raise ValueError("Assertion text exceeds 10,000 characters")
+                if type(step["value"]) in (int, float):
+                    finite(step["value"], -1e15, 1e15, "assertion value")
                 if isinstance(step["value"], float) and not math.isfinite(step["value"]):
                     raise ValueError("Non-finite assertion value")
     if sum(len(s["steps"]) for s in plan["scenarios"]) > 20000:
@@ -107,7 +113,7 @@ def load_plan(path):
 def lookup(snapshot, path):
     value = snapshot
     for key in path.split("."):
-        if isinstance(value, list) and key.isdigit():
+        if isinstance(value, list) and key.isdigit() and int(key) < len(value):
             value = value[int(key)]
         elif isinstance(value, dict) and key in value:
             value = value[key]
@@ -117,19 +123,15 @@ def lookup(snapshot, path):
 
 
 def compare(actual, op, expected):
+    equal = (
+        type(actual) is type(expected) and actual == expected
+        or type(actual) in (int, float) and type(expected) in (int, float) and actual == expected
+    )
     try:
         if op == "eq":
-            ok = (
-                type(actual) is type(expected)
-                and actual == expected
-                or (
-                    type(actual) in (int, float)
-                    and type(expected) in (int, float)
-                    and actual == expected
-                )
-            )
+            ok = equal
         elif op == "ne":
-            ok = actual != expected
+            ok = not equal
         elif op == "gt":
             ok = actual > expected
         elif op == "gte":
@@ -154,6 +156,7 @@ def fuzz_plan(seed=42, steps=300, width=480):
     finite(seed, 0, 4294967295, "seed", True)
     finite(steps, 1, 4999, "steps", True)
     finite(width, 1, 10000, "width", True)
+    seed, steps, width = int(seed), int(steps), int(width)
     rng = random.Random(seed)
     actions = [{"type": "reset", "seed": seed}]
     for _ in range(steps):

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "started_at": "2026-10-25T23:14:31.327463+00:00",
+  "target": "bundled demo-game/index.html",
+  "scenarios": [
+    {
+      "name": "Win with five taps",
+      "status": "passed",
+      "steps_completed": 8,
+      "error": "",
+      "logs": [],
+      "screenshot": "scenario-001.png",
+      "duration_seconds": 0.2637
+    }
+  ],
+  "passed": 1,
+  "failed": 0,
+  "duration_seconds": 0.5401
+}

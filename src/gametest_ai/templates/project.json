@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "title": "Five Tap Challenge",
+  "mode": "tap",
+  "width": 480,
+  "height": 640,
+  "duration": 30,
+  "target_score": 5,
+  "lives": 3,
+  "speed": 220,
+  "spawn_interval": 0.8,
+  "seed": 42,
+  "background": "#15223b",
+  "accent": "#58e0ae",
+  "rules": [
+    {
+      "event": "tap",
+      "field": "always",
+      "op": ">=",
+      "value": 0,
+      "action": "add_score",
+      "amount": 1
+    }
+  ]
+}
