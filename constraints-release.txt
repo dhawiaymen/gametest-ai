@@ -1,7 +1,7 @@
 # Versions used to build and validate v0.1.0; refresh after testing updates.
 setuptools==84.2.1
 wheel==0.48.0
-pytest==9.1.1
+pytest==9.2.0
 ruff==0.17.2
 build==1.6.1
 pyinstaller==6.22.3
